@@ -15,13 +15,14 @@ cursor = db.cursor()
 """cursor.execute("CREATE DATABASE client_server_app")"""
 
 # creates a table called customers
-"""cursor.execute("CREATE TABLE customers(username VARCHAR(255) PRIMARY KEY, password VARCHAR(255), name VARCHAR(255), "
-               "surname VARCHAR(255), jmbg VARCHAR(13), email VARCHAR(255), tickets INT)")"""
+"""cursor.execute("CREATE TABLE server_client(username VARCHAR(255) PRIMARY KEY, password VARCHAR(255), name VARCHAR(255), "
+               "surname VARCHAR(255), jmbg VARCHAR(13), email VARCHAR(255), tickets INT, vip_tickets INT)")"""
 
 
 # inserts values into the table
 def insert(val):
-    sql = "INSERT INTO customers(username, password, name, surname, jmbg, email) VALUES (%s, %s, %s, %s, %s, %s) "
+    sql = "INSERT INTO server_client(username, password, name, surname, jmbg, email, tickets, vip_tickets) VALUES (" \
+          "%s, %s, %s, %s, %s, %s, %s, %s) "
     cursor.execute(sql, val)
     db.commit()
     print(cursor.rowcount, "was inserted.")
@@ -37,8 +38,9 @@ def select(sel):
     return results
 
 
-
-
 def sumOfTickets():
-    cursor.execute("SELECT SUM(tickets) from customers")
+    cursor.execute("SELECT SUM(tickets) from server_client")
+    print(cursor.fetchall()[0][0])
+def sumOfVipTickets():
+    cursor.execute("SELECT SUM(vip_tickets) from server_client")
     print(cursor.fetchall()[0][0])

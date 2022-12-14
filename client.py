@@ -6,13 +6,16 @@ FORMAT = 'utf-8'
 HEADER = 1024
 
 
+def buyTickets():
+    print(clientSocket.recv(HEADER).decode(FORMAT))
+
 
 def logIn():
     username = input("Username: ")
     clientSocket.send(username.encode(FORMAT))
     password = input("Password: ")
     clientSocket.send(password.encode(FORMAT))
-    print(clientSocket.recv(HEADER).decode(FORMAT))
+
 
 
 def signUp():
@@ -33,21 +36,29 @@ def signUp():
         signUp()
 
 
-serverPort = 5055
+def receive():
+    connected = True
+    while connected:
+        msg = clientSocket.recv(1024)
+        print(msg.decode(FORMAT))
+        print("1. Log in")
+        print("2. Sign up")
+        msg = input("Log in(1)/Sign up(2): ")
+        clientSocket.send(msg.encode(FORMAT))
+        if msg == '1':
+            logIn()
+        elif msg == '2':
+            signUp()
+        else:
+            print('Please use correct input')
+        thread_tickets = threading.Thread(target=buyTickets)
+        thread_tickets.start()
+
+
+serverPort = 5056
 serverName = socket.gethostbyname(socket.gethostname())
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
-connected = True
-while connected:
-    msg = clientSocket.recv(1024)
-    print(msg.decode(FORMAT))
-    print("1. Log in")
-    print("2. Sign up")
-    msg = input("Log in(1)/Sign up(2): ")
-    clientSocket.send(msg.encode(FORMAT))
-    if msg == '1':
-        logIn()
-    elif msg == '2':
-        signUp()
-    print(clientSocket.recv(HEADER).decode(FORMAT))
-clientSocket.close()
+thread_client = threading.Thread(target=receive)
+thread_client.start()
+#clientSocket.close()

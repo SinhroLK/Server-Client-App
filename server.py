@@ -1,16 +1,43 @@
 import socket
 import threading
-from db import insert, select, sumOfTickets
+from db import insert, select, sumOfTickets, sumOfVipTickets
 
 FORMAT = 'utf-8'
 HEADER = 1024
-serverPort = 5055
+serverPort = 5056
 serverName = socket.gethostbyname(socket.gethostname())
-DISCONNECT_MSG = "!DISCONNECT"
+TOTAL_TICKETS = 20
+TOTAL_VIP_TICKETS = 5
 
 
 def buyTickets():
-    print('idk')
+    connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
+    currentSum = TOTAL_TICKETS - sumOfTickets()
+    currentSumVip = TOTAL_VIP_TICKETS - sumOfVipTickets()
+    print('1. Buy Normal Tickets')
+    print('2. Buy VIP Tickets')
+    print('3. Cancel reservation')
+    print('4. Quit')
+    flag = input('Choose one option: ')
+    if flag == '1':
+        print('How many tickets would you like to buy?(max 4)')
+        numOfTickets = 0
+        while numOfTickets <= 0:
+            numOfTickets = int(input())
+            if numOfTickets <= 0 or numOfTickets > 4:
+                print("Number of tickets must be less than 4 and more than 0")
+                numOfTickets = 0
+        if currentSum - numOfTickets < 0 or currentSum == 0:
+            print('There are not enough tickets')
+
+
+
+    elif flag == '2':
+        pass
+    elif flag == '3':
+        pass
+    elif flag == '4':
+        pass
 
 
 def logIn():
@@ -19,13 +46,7 @@ def logIn():
     tusername = (username,)
     tpassword = (password,)
     usernamesCheck = select('username')
-    print(usernamesCheck)
     passwordsCheck = select('password')
-    print(passwordsCheck)
-    print(tusername in usernamesCheck and tpassword in passwordsCheck)
-    print(usernamesCheck.index(tusername) == passwordsCheck.index(tpassword))
-    print(usernamesCheck.index(tusername))
-    print(passwordsCheck.index(tpassword))
     if tusername in usernamesCheck and tpassword in passwordsCheck:
         if usernamesCheck.index(tusername) == passwordsCheck.index(tpassword):
             return True
@@ -52,7 +73,6 @@ def handleClient(connection, address):
         msg = connection.recv(HEADER).decode()
         if msg == '1':
             if logIn():
-                connection.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
                 thread_tickets = threading.Thread(target=buyTickets)
                 thread_tickets.start()
         elif msg == '2':
@@ -62,7 +82,7 @@ def handleClient(connection, address):
 
 
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 serverSocket.bind((serverName, serverPort))
 serverSocket.listen(10)
 print('Server is ready')
