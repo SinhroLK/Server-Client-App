@@ -4,9 +4,12 @@ db = mysql.connector.connect(
     host="localhost",
     user="root",
     # password="root"
-    database="client_server_app"
+    database="mydatabase"
 )
 cursor = db.cursor()
+# buffered = True - ako nesto ne radi, ovo ce da ga resi
+
+# cursor.execute('SHOW DATABASE')
 
 # creates a database called client_server_app
 """cursor.execute("CREATE DATABASE client_server_app")"""
@@ -18,7 +21,7 @@ cursor = db.cursor()
 
 # inserts values into the table
 def insert(val):
-    sql = "INSERT INTO customers2(username, password, name, surname, jmbg, email) VALUES (%s, %s, %s, %s, %s, %s) "
+    sql = "INSERT INTO customers(username, password, name, surname, jmbg, email) VALUES (%s, %s, %s, %s, %s, %s) "
     cursor.execute(sql, val)
     db.commit()
     print(cursor.rowcount, "was inserted.")
@@ -28,8 +31,12 @@ def insert(val):
 def select(sel):
     cursor.execute(f"SELECT {sel} FROM customers2")
     result = cursor.fetchall()
+    results = []
     for x in result:
-        print(x)
+        results.append(x)
+    return results
+
+
 
 
 def sumOfTickets():
