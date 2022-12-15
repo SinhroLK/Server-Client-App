@@ -41,6 +41,18 @@ def select(sel):
 def sumOfTickets():
     cursor.execute("SELECT SUM(tickets) from server_client")
     print(cursor.fetchall()[0][0])
+
+
 def sumOfVipTickets():
     cursor.execute("SELECT SUM(vip_tickets) from server_client")
     print(cursor.fetchall()[0][0])
+
+
+def getReservation(tickets, username, numOfTickets):
+    cursor.execute(f'UPDATE server_client SET {tickets} = {numOfTickets} WHERE username = {username}')
+    db.commit()
+
+
+def cancelReservation(tickets, username):
+    cursor.execute(f'UPDATE server_client SET {tickets} = {0} WHERE username = {username}')
+    db.commit()
