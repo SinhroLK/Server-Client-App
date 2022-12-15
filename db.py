@@ -4,7 +4,7 @@ db = mysql.connector.connect(
     host="localhost",
     user="root",
     # password="root"
-    database="mydatabase"
+    database="client_server_app"
 )
 cursor = db.cursor()
 # buffered = True - ako nesto ne radi, ovo ce da ga resi
@@ -30,7 +30,7 @@ def insert(val):
 
 # selects values from the table
 def select(sel):
-    cursor.execute(f"SELECT {sel} FROM customers2")
+    cursor.execute(f"SELECT {sel} FROM server_client")
     result = cursor.fetchall()
     results = []
     for x in result:
@@ -40,12 +40,14 @@ def select(sel):
 
 def sumOfTickets():
     cursor.execute("SELECT SUM(tickets) from server_client")
-    print(cursor.fetchall()[0][0])
+    s = cursor.fetchall()[0][0]
+    return s
 
 
 def sumOfVipTickets():
     cursor.execute("SELECT SUM(vip_tickets) from server_client")
-    print(cursor.fetchall()[0][0])
+    s = cursor.fetchall()[0][0]
+    return s
 
 
 def getReservation(tickets, username, numOfTickets):
@@ -56,3 +58,9 @@ def getReservation(tickets, username, numOfTickets):
 def cancelReservation(tickets, username):
     cursor.execute(f'UPDATE server_client SET {tickets} = {0} WHERE username = {username}')
     db.commit()
+
+
+def userTickets(username):
+    cursor.execute('SELECT tickets, vip_tickets FROM server_client WHERE username = %s', (username,))
+    result = cursor.fetchall()[0]
+    print(result)

@@ -1,6 +1,6 @@
 import socket
 import threading
-from db import insert, select, sumOfTickets, sumOfVipTickets, getReservation, cancelReservation
+from db import insert, select, sumOfTickets, sumOfVipTickets, getReservation, cancelReservation, userTickets
 
 FORMAT = 'utf-8'
 HEADER = 1024
@@ -10,24 +10,18 @@ TOTAL_TICKETS = 20
 TOTAL_VIP_TICKETS = 5
 
 
-def buyTickets():
+def buyTickets(username):
     connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
+    #print(connectionSocket.recv(HEADER).decode(FORMAT))
     while True:
-        currentSum = TOTAL_TICKETS - int(sumOfTickets())
+        print(int(sumOfTickets()))
+        currentSum = TOTAL_TICKETS - sumOfTickets()
         currentSumVip = TOTAL_VIP_TICKETS - int(sumOfVipTickets())
-        connectionSocket.send(str(currentSum).encode(FORMAT))
-        connectionSocket.send(str(currentSumVip).encode(FORMAT))
+        print(currentSum, currentSumVip)
+        connectionSocket.send((str(currentSum)).encode(FORMAT))
+        connectionSocket.send((str(currentSumVip)).encode(FORMAT))
         flag = connectionSocket.recv(HEADER).decode(FORMAT)
         if flag == '1':
-            """print('How many tickets would you like to buy?(max 4)')
-            numOfTickets = 0
-            while numOfTickets <= 0:
-                numOfTickets = int(input())
-                if numOfTickets <= 0 or numOfTickets > 4:
-                    print("Number of tickets must be less than 4 and more than 0")
-                    numOfTickets = 0
-            if currentSum - numOfTickets < 0 or currentSum == 0:
-                print('There are not enough tickets')"""
             numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
             getReservation('tickets', username, numOfTickets)
 
@@ -40,9 +34,7 @@ def buyTickets():
             pass
 
 
-def logIn():
-    username = connectionSocket.recv(HEADER).decode()
-    password = connectionSocket.recv(HEADER).decode()
+def logIn(username, password):
     tusername = (username,)
     tpassword = (password,)
     usernamesCheck = select('username')
@@ -56,7 +48,7 @@ def logIn():
 
 def signUp():
     username = connectionSocket.recv(HEADER).decode()
-    usernames = select(username)
+    usernames = select('username')
     tusername = (username,)
 
     if tusername not in usernames:
@@ -70,8 +62,8 @@ def signUp():
     surname = connectionSocket.recv(HEADER).decode()
     jmbg = connectionSocket.recv(HEADER).decode()
     email = connectionSocket.recv(HEADER).decode()
-
     insert((username, password, name, surname, jmbg, email, 0, 0))
+    return username
 
 
 def handleClient(connection, address):
@@ -82,13 +74,17 @@ def handleClient(connection, address):
         # connection.send('WAITING FOR A MESSAGE'.encode(FORMAT))
         msg = connection.recv(HEADER).decode()
         if msg == '1':
-            if logIn():
-                thread_tickets = threading.Thread(target=buyTickets)
+            username = connectionSocket.recv(HEADER).decode()
+            password = connectionSocket.recv(HEADER).decode()
+            if logIn(username, password):
+                thread_tickets = threading.Thread(target=buyTickets, args=(username,))
                 thread_tickets.start()
             else:
-                logIn()
+                logIn(username, password)
         elif msg == '2':
-            signUp()
+            username = signUp()
+            thread_tickets = threading.Thread(target=buyTickets, args=(username,))
+            thread_tickets.start()
 
     connection.close()
 

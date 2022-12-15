@@ -1,11 +1,11 @@
 import socket
 import threading
 
-DISCONNECT_MSG = "!DISCONNECT"
 FORMAT = 'utf-8'
 HEADER = 1024
 TOTAL_TICKETS = 20
 TOTAL_VIP_TICKETS = 5
+username = ''
 
 
 def buyTickets():
@@ -13,6 +13,7 @@ def buyTickets():
     while True:
         currentSum = int(clientSocket.recv(HEADER).decode(FORMAT))
         currentSumVip = int(clientSocket.recv(HEADER).decode(FORMAT))
+
         print('1. Buy Normal Tickets')
         print('2. Buy VIP Tickets')
         print('3. Cancel reservation')
@@ -43,12 +44,14 @@ def buyTickets():
                 buyTickets()
             clientSocket.send(str(numOfTickets).encode(FORMAT))
         elif flag == '3':
-            pass
+            print("You have disconnected.")
+            clientSocket.close()
         elif flag == '4':
             pass
 
 
 def logIn():
+    global username
     username = input("Username: ")
     clientSocket.send(username.encode(FORMAT))
     password = input("Password: ")
@@ -56,6 +59,7 @@ def logIn():
 
 
 def signUp():
+    global username
     username = input("Username: ")
     clientSocket.send(username.encode(FORMAT))
     if clientSocket.recv(HEADER).decode(FORMAT) == 'Username unavailable, choose other username':
