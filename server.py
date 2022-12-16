@@ -1,6 +1,7 @@
 import socket
 import threading
-from db import insert, select, sumOfTickets, sumOfVipTickets, getReservation, cancelReservation, userTickets
+from db import insert, select, sumOfTickets, sumOfVipTickets, getNormalReservation,getVIPReservation, \
+    cancelNormalReservation, cancelVIPReservation, userTickets
 
 FORMAT = 'utf-8'
 HEADER = 1024
@@ -23,11 +24,12 @@ def buyTickets(username):
         flag = connectionSocket.recv(HEADER).decode(FORMAT)
         if flag == '1':
             numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
-            getReservation('tickets', username, numOfTickets)
+            print(numOfTickets)
+            getNormalReservation(username, numOfTickets)
 
         elif flag == '2':
             numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
-            getReservation('vip_tickets', username, numOfTickets)
+            getVIPReservation(username, numOfTickets)
         elif flag == '3':
             pass
         elif flag == '4':
@@ -41,8 +43,10 @@ def logIn(username, password):
     passwordsCheck = select('password')
     if tusername in usernamesCheck and tpassword in passwordsCheck:
         if usernamesCheck.index(tusername) == passwordsCheck.index(tpassword):
+            connectionSocket.send('1'.encode(FORMAT))
             return True
         else:
+            connectionSocket.send('Incorrect username or password'.encode(FORMAT))
             return False
 
 

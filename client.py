@@ -17,7 +17,8 @@ def buyTickets():
         print('1. Buy Normal Tickets')
         print('2. Buy VIP Tickets')
         print('3. Cancel reservation')
-        print('4. Quit')
+        print('4. Number of tickets available')
+        print('5. Quit')
         flag = input('Choose one option: ')
         clientSocket.send(flag.encode(FORMAT))
         if flag == '1':
@@ -31,7 +32,7 @@ def buyTickets():
             if currentSum - numOfTickets < 0 or currentSum == 0:
                 print('There are not enough tickets')
                 buyTickets()
-            clientSocket.send(str(numOfTickets).encode(FORMAT))
+            clientSocket.send((str(numOfTickets)).encode(FORMAT))
 
         elif flag == '2':
             numOfTickets = 0
@@ -44,10 +45,12 @@ def buyTickets():
                 buyTickets()
             clientSocket.send(str(numOfTickets).encode(FORMAT))
         elif flag == '3':
-            print("You have disconnected.")
-            clientSocket.close()
+            pass
         elif flag == '4':
             pass
+        elif flag == '5':
+            print("You have disconnected.")
+            clientSocket.close()
 
 
 def logIn():
@@ -56,13 +59,19 @@ def logIn():
     clientSocket.send(username.encode(FORMAT))
     password = input("Password: ")
     clientSocket.send(password.encode(FORMAT))
+    msg = clientSocket.recv(HEADER).decode(FORMAT)
+    if msg == 'Incorrect username or password':
+        print(msg)
+        logIn()
 
 
 def signUp():
     global username
     username = input("Username: ")
     clientSocket.send(username.encode(FORMAT))
-    if clientSocket.recv(HEADER).decode(FORMAT) == 'Username unavailable, choose other username':
+    msg = clientSocket.recv(HEADER).decode(FORMAT)
+    print(msg)
+    if msg == 'Username unavailable, choose other username':
         signUp()
     else:
         password = input("Password: ")
