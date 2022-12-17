@@ -84,5 +84,5 @@ def delete():
     db.commit()
     print(cursor.rowcount, 'deleted')
 
-cancelNormalReservation('root')
+
 

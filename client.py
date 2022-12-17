@@ -32,20 +32,18 @@ def buyTickets():
                 if newTickets <= 0 or newTickets > 4:
                     print("Number of tickets must be less than 4 and more than 0, pick another number:")
                     newTickets = 0
-            print('we good')
             if currTickets + newTickets > 4:  # checks if client has more than 4 tickets with the new ones
                 print("You can't have more than 4 tickets")
                 clientSocket.send('sum more than 4'.encode(FORMAT))
                 buyTickets()
-            print('we good')
+
             if currentAvailable - newTickets < 0 or currentAvailable == 0:  # checks if there are enough tickets to buy
                 print('There are not enough tickets')
                 clientSocket.send('not enough tickets'.encode(FORMAT))
                 buyTickets()
-            print('we good')
+
             clientSocket.send((str(newTickets)).encode(FORMAT))
             clientSocket.send((str(newTickets)).encode(FORMAT))
-            print('we good')
 
         elif flag == '2':
             newTickets = 0

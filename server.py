@@ -41,6 +41,7 @@ def buyTicketsServer(username):
             buyTicketsServer(username)
 
         elif flag == '2':
+            connectionSocket.send((str(numOfTickets)).encode(FORMAT))
             numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
             getVIPReservation(username, numOfTickets)
         elif flag == '3':
