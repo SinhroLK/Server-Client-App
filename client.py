@@ -5,14 +5,16 @@ FORMAT = 'utf-8'
 HEADER = 1024
 TOTAL_TICKETS = 20
 TOTAL_VIP_TICKETS = 5
+serverPort = 5050
+serverName = socket.gethostbyname(socket.gethostname())
 username = ''
 
 
 def buyTickets():
     print(clientSocket.recv(HEADER).decode(FORMAT))
     while True:
-        currentSum = int(clientSocket.recv(HEADER).decode(FORMAT))
-        currentSumVip = int(clientSocket.recv(HEADER).decode(FORMAT))
+        currentAvailable = int(clientSocket.recv(HEADER).decode(FORMAT))  #
+        currentAvailableVip = int(clientSocket.recv(HEADER).decode(FORMAT))
 
         print('1. Buy Normal Tickets')
         print('2. Buy VIP Tickets')
@@ -23,27 +25,43 @@ def buyTickets():
         clientSocket.send(flag.encode(FORMAT))
         if flag == '1':
             print('How many tickets would you like to buy?(max 4)')
-            numOfTickets = 0
-            while numOfTickets <= 0:
-                numOfTickets = int(input())
-                if numOfTickets <= 0 or numOfTickets > 4:
-                    print("Number of tickets must be less than 4 and more than 0")
-                    numOfTickets = 0
-            if currentSum - numOfTickets < 0 or currentSum == 0:
-                print('There are not enough tickets')
+            newTickets = 0  # num of tickets client wants to buy
+            currTickets = int(clientSocket.recv(HEADER).decode(FORMAT))  # curr amount the client has
+            while newTickets <= 0:  # inputs the amount the client wants until it's a number we can work with
+                newTickets = int(input())
+                if newTickets <= 0 or newTickets > 4:
+                    print("Number of tickets must be less than 4 and more than 0, pick another number:")
+                    newTickets = 0
+            print('we good')
+            if currTickets + newTickets > 4:  # checks if client has more than 4 tickets with the new ones
+                print("You can't have more than 4 tickets")
+                clientSocket.send('sum more than 4'.encode(FORMAT))
                 buyTickets()
-            clientSocket.send((str(numOfTickets)).encode(FORMAT))
+            print('we good')
+            if currentAvailable - newTickets < 0 or currentAvailable == 0:  # checks if there are enough tickets to buy
+                print('There are not enough tickets')
+                clientSocket.send('not enough tickets'.encode(FORMAT))
+                buyTickets()
+            print('we good')
+            clientSocket.send((str(newTickets)).encode(FORMAT))
+            clientSocket.send((str(newTickets)).encode(FORMAT))
+            print('we good')
 
         elif flag == '2':
-            numOfTickets = 0
-            while numOfTickets <= 0:
-                numOfTickets = int(input())
-                if numOfTickets <= 0:
-                    print('Number of tickets has to be more than 0')
-            if currentSumVip - numOfTickets < 0 or currentSumVip == 0:
+            newTickets = 0
+            currTickets = int(clientSocket.recv(HEADER).decode(FORMAT))
+            while newTickets <= 0:
+                newTickets = int(input())
+                if newTickets <= 0:
+                    print('Number of tickets has to be more than 0, choose other number')
+            if currTickets + newTickets > 4:
+                print("You can't have more than 4 tickets")
+                clientSocket.send('sum more than 4'.encode(FORMAT))
+                buyTickets()
+            if currentAvailableVip - newTickets < 0 or currentAvailableVip == 0:
                 print('There are not enough tickets')
                 buyTickets()
-            clientSocket.send(str(numOfTickets).encode(FORMAT))
+            clientSocket.send(str(newTickets).encode(FORMAT))
         elif flag == '3':
             pass
         elif flag == '4':
@@ -51,6 +69,7 @@ def buyTickets():
         elif flag == '5':
             print("You have disconnected.")
             clientSocket.close()
+        buyTickets()
 
 
 def logIn():
@@ -72,7 +91,7 @@ def signUp():
     msg = clientSocket.recv(HEADER).decode(FORMAT)
     print(msg)
     if msg == 'Username unavailable, choose other username':
-        signUp()
+        clientSocket.close()
     else:
         password = input("Password: ")
         clientSocket.send(password.encode(FORMAT))
@@ -106,13 +125,15 @@ def receive():
             signUp()
             break
         else:
-            print('Please use correct input')
-    thread_tickets = threading.Thread(target=buyTickets)
-    thread_tickets.start()
+            try:
+                clientSocket.close()
+            except:
+                print('Please use correct input')
+    # buyTickets()
+    thread_tickets_client = threading.Thread(target=buyTickets)
+    thread_tickets_client.start()
 
 
-serverPort = 5057
-serverName = socket.gethostbyname(socket.gethostname())
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
 thread_client = threading.Thread(target=receive)

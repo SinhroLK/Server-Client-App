@@ -5,27 +5,40 @@ from db import insert, select, sumOfTickets, sumOfVipTickets, getNormalReservati
 
 FORMAT = 'utf-8'
 HEADER = 1024
-serverPort = 5057
+serverPort = 5050
 serverName = socket.gethostbyname(socket.gethostname())
 TOTAL_TICKETS = 20
 TOTAL_VIP_TICKETS = 5
 
 
-def buyTickets(username):
+def buyTicketsServer(username):
     connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
     #print(connectionSocket.recv(HEADER).decode(FORMAT))
     while True:
-        print(int(sumOfTickets()))
+        # calculates current number of availble tickets of both kinds
         currentSum = TOTAL_TICKETS - sumOfTickets()
         currentSumVip = TOTAL_VIP_TICKETS - int(sumOfVipTickets())
-        print(currentSum, currentSumVip)
+        # sends the respective amounts to the client
         connectionSocket.send((str(currentSum)).encode(FORMAT))
         connectionSocket.send((str(currentSumVip)).encode(FORMAT))
+        # receives the flag from the client
         flag = connectionSocket.recv(HEADER).decode(FORMAT)
+        # gets the number of tickets the user already has, normal and vip respectively
+        numOfTicketsNormal, numOfTicketsVIP = userTickets(username)
+        # sums the total amount of tickets the user has
+        numOfTickets = numOfTicketsNormal + numOfTicketsVIP
         if flag == '1':
-            numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
-            print(numOfTickets)
-            getNormalReservation(username, numOfTickets)
+            # sends the current amount of tickets the clients has to the client
+            connectionSocket.send((str(numOfTickets)).encode(FORMAT))
+            # receives how many tickets the client wants to buy
+            msg = connectionSocket.recv(HEADER).decode(FORMAT)
+            # checks whether user wants the amount he can get
+            if msg == 'sum more than 4' or msg == 'not enough tickets':
+                buyTicketsServer(username)
+            else:
+                numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
+                getNormalReservation(username, numOfTickets)
+            buyTicketsServer(username)
 
         elif flag == '2':
             numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
@@ -34,6 +47,8 @@ def buyTickets(username):
             pass
         elif flag == '4':
             pass
+        else:
+            print(username, ' disconnected')
 
 
 def logIn(username, password):
@@ -59,7 +74,6 @@ def signUp():
         connectionSocket.send('Username available'.encode(FORMAT))
     else:
         connectionSocket.send('Username unavailable, choose other username'.encode(FORMAT))
-        signUp()
 
     password = connectionSocket.recv(HEADER).decode()
     name = connectionSocket.recv(HEADER).decode()
@@ -81,14 +95,16 @@ def handleClient(connection, address):
             username = connectionSocket.recv(HEADER).decode()
             password = connectionSocket.recv(HEADER).decode()
             if logIn(username, password):
-                thread_tickets = threading.Thread(target=buyTickets, args=(username,))
-                thread_tickets.start()
+                """thread_tickets = threading.Thread(target=buyTickets, args=(username,))
+                thread_tickets.start()"""
             else:
                 logIn(username, password)
         elif msg == '2':
             username = signUp()
-            thread_tickets = threading.Thread(target=buyTickets, args=(username,))
-            thread_tickets.start()
+            print(username)
+        #thread_tickets_server = threading.Thread(target=buyTicketsServer, args=(username,))
+        #thread_tickets_server.start()
+        buyTicketsServer(username)
 
     connection.close()
 

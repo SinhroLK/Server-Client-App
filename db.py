@@ -32,7 +32,7 @@ def insert(val):
 def select(sel):
     cursor.execute(f"SELECT {sel} FROM server_client")
     result = cursor.fetchall()
-    print(result)
+    #print(result)
     results = []
     for x in result:
         results.append(x)
@@ -42,7 +42,7 @@ def select(sel):
 def sumOfTickets():
     cursor.execute("SELECT SUM(tickets) from server_client")
     s = cursor.fetchall()[0][0]
-    print(s)
+    #print(s)
     return s
 
 
@@ -55,6 +55,7 @@ def sumOfVipTickets():
 def getNormalReservation(username, numOfTickets):
     cursor.execute('''UPDATE server_client SET tickets = %s WHERE username = %s''', (numOfTickets, username))
     db.commit()
+    print(username, ' successfully bought ', str(numOfTickets), ' tickets')
 
 
 def getVIPReservation(username, numOfTickets):
@@ -66,6 +67,7 @@ def cancelNormalReservation(username):
     cursor.execute('''UPDATE server_client SET tickets = 0 WHERE username = %s''', (username,))
     db.commit()
 
+
 def cancelVIPReservation(username):
     cursor.execute('''UPDATE server_client SET vip_tickets = 0 WHERE username = %s''', (username,))
     db.commit()
@@ -74,4 +76,13 @@ def cancelVIPReservation(username):
 def userTickets(username):
     cursor.execute('SELECT tickets, vip_tickets FROM server_client WHERE username = %s', (username,))
     result = cursor.fetchall()[0]
-    print(result)
+    return result
+
+def delete():
+    sql = "DELETE FROM server_client where username = 'root5'"
+    cursor.execute(sql)
+    db.commit()
+    print(cursor.rowcount, 'deleted')
+
+cancelNormalReservation('root')
+
