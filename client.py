@@ -5,15 +5,15 @@ FORMAT = 'utf-8'
 HEADER = 1024
 TOTAL_TICKETS = 20
 TOTAL_VIP_TICKETS = 5
-serverPort = 5050
+serverPort = 5051
 serverName = socket.gethostbyname(socket.gethostname())
 username = ''
 
 
 def buyTickets():
-    print(clientSocket.recv(HEADER).decode(FORMAT))
+    #print(clientSocket.recv(HEADER).decode(FORMAT))
     while True:
-        currentAvailable = int(clientSocket.recv(HEADER).decode(FORMAT))  #
+        currentAvailable = int(clientSocket.recv(HEADER).decode(FORMAT))
         currentAvailableVip = int(clientSocket.recv(HEADER).decode(FORMAT))
 
         print('1. Buy Normal Tickets')
@@ -44,8 +44,10 @@ def buyTickets():
 
             clientSocket.send((str(newTickets)).encode(FORMAT))
             clientSocket.send((str(newTickets)).encode(FORMAT))
+            buyTickets()
 
         elif flag == '2':
+            print('How many tickets would you like to buy?(max 4)')
             newTickets = 0
             currTickets = int(clientSocket.recv(HEADER).decode(FORMAT))
             while newTickets <= 0:
@@ -61,9 +63,13 @@ def buyTickets():
                 buyTickets()
             clientSocket.send(str(newTickets).encode(FORMAT))
         elif flag == '3':
-            pass
+            clientSocket.send(username.encode(FORMAT))
+            print(clientSocket.recv(HEADER).decode(FORMAT))
+            buyTickets()
         elif flag == '4':
-            pass
+            print('Currently available normal tickets: ', clientSocket.recv(HEADER).decode(FORMAT))
+            print('Currently available VIP tickets', clientSocket.recv(HEADER).decode(FORMAT))
+            buyTickets()
         elif flag == '5':
             print("You have disconnected.")
             clientSocket.close()
@@ -109,9 +115,10 @@ def signUp():
 
 def receive():
     connected = True
+    msg = clientSocket.recv(1024)
+    print(msg.decode(FORMAT))
     while connected:
-        msg = clientSocket.recv(1024)
-        print(msg.decode(FORMAT))
+
         print("1. Log in")
         print("2. Sign up")
         msg = input("Log in(1)/Sign up(2): ")
@@ -123,11 +130,10 @@ def receive():
             signUp()
             break
         else:
-            try:
-                clientSocket.close()
-            except:
-                print('Please use correct input')
+            print('Please use correct input')
+            receive()
     # buyTickets()
+    print('\n', clientSocket.recv(HEADER).decode(FORMAT))
     thread_tickets_client = threading.Thread(target=buyTickets)
     thread_tickets_client.start()
 

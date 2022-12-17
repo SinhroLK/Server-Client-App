@@ -5,14 +5,14 @@ from db import insert, select, sumOfTickets, sumOfVipTickets, getNormalReservati
 
 FORMAT = 'utf-8'
 HEADER = 1024
-serverPort = 5050
+serverPort = 5051
 serverName = socket.gethostbyname(socket.gethostname())
 TOTAL_TICKETS = 20
 TOTAL_VIP_TICKETS = 5
 
 
 def buyTicketsServer(username):
-    connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
+    #connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
     #print(connectionSocket.recv(HEADER).decode(FORMAT))
     while True:
         # calculates current number of availble tickets of both kinds
@@ -44,10 +44,19 @@ def buyTicketsServer(username):
             connectionSocket.send((str(numOfTickets)).encode(FORMAT))
             numOfTickets = int(connectionSocket.recv(HEADER).decode(FORMAT))
             getVIPReservation(username, numOfTickets)
+            buyTicketsServer(username)
         elif flag == '3':
-            pass
+            user = connectionSocket.recv(HEADER).decode(FORMAT)
+            cancelNormalReservation(user)
+            cancelVIPReservation(user)
+            connectionSocket.send('You have successfully canceled your reservations'.encode(FORMAT))
+            buyTicketsServer(username)
         elif flag == '4':
-            pass
+            availableNormal = TOTAL_TICKETS - sumOfTickets()
+            availableVip = TOTAL_VIP_TICKETS - sumOfVipTickets()
+            connectionSocket.send((str(availableNormal)).encode(FORMAT))
+            connectionSocket.send((str(availableVip)).encode(FORMAT))
+            buyTicketsServer(username)
         else:
             print(username, ' disconnected')
 
@@ -102,7 +111,10 @@ def handleClient(connection, address):
                 logIn(username, password)
         elif msg == '2':
             username = signUp()
-            print(username)
+            #print(username)
+        else:
+            handleClient(connection, address)
+        connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
         #thread_tickets_server = threading.Thread(target=buyTicketsServer, args=(username,))
         #thread_tickets_server.start()
         buyTicketsServer(username)
