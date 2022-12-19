@@ -64,13 +64,15 @@ def getVIPReservation(username, numOfTickets):
     print(username, ' successfully bought ', str(numOfTickets), ' tickets')
 
 
-def cancelNormalReservation(username):
-    cursor.execute('''UPDATE server_client SET tickets = 0 WHERE username = %s''', (username,))
+def cancelNormalReservation(username, userTics):
+    userNormal, userVIP = userTickets(username)
+    cursor.execute('''UPDATE server_client SET tickets = %s WHERE username = %s''', (userNormal-userTics,username,))
     db.commit()
 
 
-def cancelVIPReservation(username):
-    cursor.execute('''UPDATE server_client SET vip_tickets = 0 WHERE username = %s''', (username,))
+def cancelVIPReservation(username, userTics):
+    userNormal, userVIP = userTickets(username)
+    cursor.execute('''UPDATE server_client SET vip_tickets = %s WHERE username = %s''', (userVIP-userTics, username))
     db.commit()
 
 
@@ -84,4 +86,5 @@ def delete():
     cursor.execute(sql)
     db.commit()
     print(cursor.rowcount, 'deleted')
+
 

@@ -1,6 +1,6 @@
 import socket
 import threading
-from db import insert, select, sumOfTickets, sumOfVipTickets, getNormalReservation,getVIPReservation, \
+from db import insert, select, sumOfTickets, sumOfVipTickets, getNormalReservation, getVIPReservation, \
     cancelNormalReservation, cancelVIPReservation, userTickets
 
 FORMAT = 'utf-8'
@@ -12,8 +12,8 @@ TOTAL_VIP_TICKETS = 5
 
 
 def buyTicketsServer(username):
-    #connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
-    #print(connectionSocket.recv(HEADER).decode(FORMAT))
+    # connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
+    # print(connectionSocket.recv(HEADER).decode(FORMAT))
     while True:
         # calculates current number of availble tickets of both kinds
         currentSum = TOTAL_TICKETS - sumOfTickets()
@@ -46,9 +46,15 @@ def buyTicketsServer(username):
             getVIPReservation(username, numOfTickets)
             buyTicketsServer(username)
         elif flag == '3':
-            user = connectionSocket.recv(HEADER).decode(FORMAT)
-            cancelNormalReservation(user)
-            cancelVIPReservation(user)
+            userNormal, userVIP = userTickets(username)
+            connectionSocket.send((str(userNormal)).encode(FORMAT))
+            connectionSocket.send((str(userVIP)).encode(FORMAT))
+            msg = connectionSocket.recv(HEADER).decode(FORMAT)
+            userTics = int(connectionSocket.recv(HEADER).decode(FORMAT))
+            if msg == '1':
+                cancelNormalReservation(username, userTics)
+            elif msg == '2':
+                cancelVIPReservation(username, userTics)
             connectionSocket.send('You have successfully canceled your reservations'.encode(FORMAT))
             buyTicketsServer(username)
         elif flag == '4':
@@ -111,12 +117,12 @@ def handleClient(connection, address):
                 logIn(username, password)
         elif msg == '2':
             username = signUp()
-            #print(username)
+            # print(username)
         else:
             handleClient(connection, address)
         connectionSocket.send('SUCCESSFULLY LOGGED IN'.encode(FORMAT))
-        #thread_tickets_server = threading.Thread(target=buyTicketsServer, args=(username,))
-        #thread_tickets_server.start()
+        # thread_tickets_server = threading.Thread(target=buyTicketsServer, args=(username,))
+        # thread_tickets_server.start()
         buyTicketsServer(username)
 
     connection.close()

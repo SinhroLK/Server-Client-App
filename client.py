@@ -63,7 +63,28 @@ def buyTickets():
                 buyTickets()
             clientSocket.send(str(newTickets).encode(FORMAT))
         elif flag == '3':
-            clientSocket.send(username.encode(FORMAT))
+            userNormal = int(clientSocket.recv(HEADER).decode(FORMAT))
+            userVIP = int(clientSocket.recv(HEADER).decode(FORMAT))
+            print('1. Cancel normal reservations')
+            print('2. Cancel VIP reservations')
+            print('3. Back to menu')
+            msg = ''
+            num = 0
+            while msg != '1' and msg != '2':
+                msg = input('Input your choice: ')
+                clientSocket.send(msg.encode(FORMAT))
+                if msg == '1':
+                    while num > userNormal or num == 0:
+                        num = int(input('How many reservations would you like to cancel(less than or equal to the number you have): '))
+                elif msg == '2':
+                    while num > userVIP or num == 0:
+                        num = int(input('How many reservations would you like to cancel(less than or equal to the number you have): '))
+                elif msg == '3':
+                    buyTickets()
+                else:
+                    print('Please use correct input')
+            clientSocket.send((str(num)).encode(FORMAT))
+            #clientSocket.send(username.encode(FORMAT))
             print(clientSocket.recv(HEADER).decode(FORMAT))
             buyTickets()
         elif flag == '4':
