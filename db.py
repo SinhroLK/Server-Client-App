@@ -6,7 +6,7 @@ db = mysql.connector.connect(
     # password="root"
     database="client_server_app"
 )
-cursor = db.cursor()
+cursor = db.cursor(buffered=True)
 # buffered = True - ako nesto ne radi, ovo ce da ga resi
 
 # cursor.execute('SHOW DATABASE')
@@ -42,7 +42,7 @@ def select(sel):
 def sumOfTickets():
     cursor.execute("SELECT SUM(tickets) from server_client")
     s = cursor.fetchall()[0][0]
-    #print(s)
+    # print(s)
     return s
 
 
@@ -66,13 +66,13 @@ def getVIPReservation(username, numOfTickets):
 
 def cancelNormalReservation(username, userTics):
     userNormal, userVIP = userTickets(username)
-    cursor.execute('''UPDATE server_client SET tickets = %s WHERE username = %s''', (userNormal-userTics,username,))
+    cursor.execute('''UPDATE server_client SET tickets = %s WHERE username = %s''', (userNormal - userTics, username,))
     db.commit()
 
 
 def cancelVIPReservation(username, userTics):
     userNormal, userVIP = userTickets(username)
-    cursor.execute('''UPDATE server_client SET vip_tickets = %s WHERE username = %s''', (userVIP-userTics, username))
+    cursor.execute('''UPDATE server_client SET vip_tickets = %s WHERE username = %s''', (userVIP - userTics, username))
     db.commit()
 
 
@@ -81,10 +81,9 @@ def userTickets(username):
     result = cursor.fetchall()[0]
     return result
 
+
 def delete():
     sql = "DELETE FROM server_client where username = 'root5'"
     cursor.execute(sql)
     db.commit()
     print(cursor.rowcount, 'deleted')
-
-
