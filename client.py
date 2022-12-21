@@ -1,5 +1,6 @@
 import threading
 import socket
+import qrcode
 
 FORMAT = 'utf-8'
 HEADER = 1024
@@ -32,7 +33,7 @@ def registration():
                 msg = clientSocket.recv(HEADER).decode(FORMAT)
                 if msg == 'ACCESS DENIED':
                     print('Wrong username or password')
-                    stop = True
+                    break
             elif msg == '2':
                 username = input("Username: ")
                 clientSocket.send(username.encode(FORMAT))
@@ -55,10 +56,10 @@ def registration():
                     email = input("Email: ")
                     clientSocket.send(email.encode(FORMAT))
             else:
-                print('Please use correct input')
+                raise Exception('Irregular input')
             break
         except:
-            print('Client uginuo')
+            print('Client uginu')
             clientSocket.close()
             break
     try:
@@ -67,6 +68,56 @@ def registration():
         thread_ticekting.start()
     except:
         print('Client closed')
+
+
+def buyNormalTickets():
+    print('How many tickets would you like to buy(max 4)?')
+    newTickets = int(input())
+    while newTickets < 0 or newTickets > 4:
+        print('You can only buy more than 0 and less than 4 ticekts, try again')
+        newTickets = int(input())
+    clientSocket.send((str(newTickets)).encode(FORMAT))
+    print(clientSocket.recv(HEADER).decode(FORMAT))
+
+
+
+def buyVipTickets():
+    print('How many tickets would you like to buy(max 4)?')
+    newTickets = int(input())
+    while newTickets < 0 or newTickets > 4:
+        print('You can only buy more than 0 and less than 4 ticekts, try again')
+        newTickets = int(input())
+    clientSocket.send((str(newTickets)).encode(FORMAT))
+    print(clientSocket.recv(HEADER).decode(FORMAT))
+
+
+def cancelReservation():
+    userNormal = int(clientSocket.recv(HEADER).decode(FORMAT))
+    userVIP = int(clientSocket.recv(HEADER).decode(FORMAT))
+    print('1. Cancel normal reservations')
+    print('2. Cancel VIP reservations')
+    print('3. Back to menu')
+    msg = ''
+    num = 5
+    while msg != '1' and msg != '2' and msg != '3':
+        msg = input('Input your choice: ')
+        clientSocket.send(msg.encode(FORMAT))
+        print(clientSocket.recv(HEADER).decode(FORMAT))
+        if msg == '1':
+            while num > userNormal or num < 0:
+                num = int(input(
+                    'How many reservations would you like to cancel(less than or equal to the number you have): '))
+        elif msg == '2':
+            while num > userVIP or num < 0:
+                num = int(input(
+                    'How many reservations would you like to cancel(less than or equal to the number you have): '))
+        elif msg == '3':
+            break
+        else:
+            print('Please use correct input')
+    clientSocket.send((str(num)).encode(FORMAT))
+    # clientSocket.send(username.encode(FORMAT))
+    print(clientSocket.recv(HEADER).decode(FORMAT))
 
 
 def ticketing(username):
@@ -89,62 +140,23 @@ def ticketing(username):
                     break
                 clientSocket.send(msg.encode(FORMAT))
                 if msg == '1':
-                    print('How many tickets would you like to buy(max 4)?')
-                    newTickets = int(input())
-                    while newTickets < 0 or newTickets > 4:
-                        print('You can only buy more than 0 and less than 4 ticekts, try again')
-                        newTickets = int(input())
-                    clientSocket.send((str(newTickets)).encode(FORMAT))
-                    print(clientSocket.recv(HEADER).decode(FORMAT))
+                    buyNormalTickets()
                 elif msg == '2':
-                    print('How many tickets would you like to buy(max 4)?')
-                    newTickets = int(input())
-                    while newTickets < 0 or newTickets > 4:
-                        print('You can only buy more than 0 and less than 4 ticekts, try again')
-                        newTickets = int(input())
-                    clientSocket.send((str(newTickets)).encode(FORMAT))
-                    print(clientSocket.recv(HEADER).decode(FORMAT))
+                    buyVipTickets()
                 elif msg == '3':
-                    userNormal = int(clientSocket.recv(HEADER).decode(FORMAT))
-                    userVIP = int(clientSocket.recv(HEADER).decode(FORMAT))
-                    print('1. Cancel normal reservations')
-                    print('2. Cancel VIP reservations')
-                    print('3. Back to menu')
-                    msg = ''
-                    num = 0
-                    while msg != '1' and msg != '2':
-                        msg = input('Input your choice: ')
-                        clientSocket.send(msg.encode(FORMAT))
-                        print(clientSocket.recv(HEADER).decode(FORMAT))
-                        if msg == '1':
-                            while num > userNormal or num == 0:
-                                num = int(input(
-                                    'How many reservations would you like to cancel(less than or equal to the number you have): '))
-                        elif msg == '2':
-                            while num > userVIP or num == 0:
-                                num = int(input(
-                                    'How many reservations would you like to cancel(less than or equal to the number you have): '))
-                        elif msg == '3':
-                            break
-                        else:
-                            print('Please use correct input')
-                    clientSocket.send((str(num)).encode(FORMAT))
-                    # clientSocket.send(username.encode(FORMAT))
-                    print(clientSocket.recv(HEADER).decode(FORMAT))
+                    cancelReservation()
                 elif msg == '4':
                     print('Currently available normal tickets: ', clientSocket.recv(HEADER).decode(FORMAT))
                     print('Currently available VIP tickets', clientSocket.recv(HEADER).decode(FORMAT))
                 elif msg == '5':
                     print('Hope to see you again soon')
-                    stop = True
                     break
         except:
             print('You left')
 
 
-if __name__ == "__main__":
-    try:
-        receive_thread = threading.Thread(target=registration)
-        receive_thread.start()
-    except:
-        print("Client closed")
+try:
+    receive_thread = threading.Thread(target=registration)
+    receive_thread.start()
+except:
+    print("Client closed")
