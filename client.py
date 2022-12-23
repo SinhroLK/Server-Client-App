@@ -1,6 +1,9 @@
 import threading
 import socket
 import qrcode
+from qrcodeList import links
+from random import randint
+from PIL import Image
 
 FORMAT = 'utf-8'
 HEADER = 1024
@@ -12,6 +15,13 @@ username = ''
 stop = False
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
+
+
+def qrCode(value, user, num):
+    link = links[value]
+    img = qrcode.make(link)
+
+    img.save(f'{user}{num}.png')
 
 
 def registration():
@@ -78,7 +88,7 @@ def buyNormalTickets():
         newTickets = int(input())
     clientSocket.send((str(newTickets)).encode(FORMAT))
     print(clientSocket.recv(HEADER).decode(FORMAT))
-
+    return newTickets
 
 
 def buyVipTickets():
@@ -89,6 +99,7 @@ def buyVipTickets():
         newTickets = int(input())
     clientSocket.send((str(newTickets)).encode(FORMAT))
     print(clientSocket.recv(HEADER).decode(FORMAT))
+    return newTickets
 
 
 def cancelReservation():
@@ -140,9 +151,15 @@ def ticketing(username):
                     break
                 clientSocket.send(msg.encode(FORMAT))
                 if msg == '1':
-                    buyNormalTickets()
+                    newTickets = buyNormalTickets()
+                    for i in range(newTickets):
+                        value = randint(0, 14)
+                        qrCode(value, username, i+1)
                 elif msg == '2':
-                    buyVipTickets()
+                    newTickets = buyVipTickets()
+                    for i in range(newTickets):
+                        value = randint(0, 14)
+                        qrCode(value, username, i + 1)
                 elif msg == '3':
                     cancelReservation()
                 elif msg == '4':
