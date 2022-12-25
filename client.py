@@ -69,7 +69,7 @@ def registration():
                 raise Exception('Irregular input')
             break
         except:
-            print('Client uginu')
+            print('Client uginuo')
             clientSocket.close()
             break
     try:
@@ -131,7 +131,7 @@ def cancelReservation():
     print(clientSocket.recv(HEADER).decode(FORMAT))
 
 
-def ticketing(username):
+def ticketing(user):
     global stop
     if not stop:
         print('Thank you for using our ticketing system')
@@ -154,7 +154,7 @@ def ticketing(username):
                     newTickets = buyNormalTickets()
                     for i in range(newTickets):
                         value = randint(0, 14)
-                        qrCode(value, username, i+1)
+                        qrCode(value, user, i+1)
                 elif msg == '2':
                     newTickets = buyVipTickets()
                     for i in range(newTickets):
@@ -167,7 +167,7 @@ def ticketing(username):
                     print('Currently available VIP tickets', clientSocket.recv(HEADER).decode(FORMAT))
                 elif msg == '5':
                     print('Hope to see you again soon')
-                    break
+                    clientSocket.close()
         except:
             print('You left')
 
