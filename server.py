@@ -58,9 +58,10 @@ def tickets(connection, username):
                 connectionSocket.send((str(availableNormal)).encode(FORMAT))
                 connectionSocket.send((str(availableVip)).encode(FORMAT))
             elif msg == '5':
-                print('Hope to see you again soon')
+                print(f'{username} left')
+                break
         except:
-            print(f'{username} left')
+            print('Connection with client ended')
             break
 
 

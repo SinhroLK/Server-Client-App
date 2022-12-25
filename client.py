@@ -3,7 +3,7 @@ import socket
 import qrcode
 from qrcodeList import links
 from random import randint
-from PIL import Image
+# from PIL import Image
 
 FORMAT = 'utf-8'
 HEADER = 1024
@@ -153,12 +153,12 @@ def ticketing(user):
                 if msg == '1':
                     newTickets = buyNormalTickets()
                     for i in range(newTickets):
-                        value = randint(0, 14)
+                        value = randint(0, len(links)-1)
                         qrCode(value, user, i+1)
                 elif msg == '2':
                     newTickets = buyVipTickets()
                     for i in range(newTickets):
-                        value = randint(0, 14)
+                        value = randint(0, len(links)-1)
                         qrCode(value, username, i + 1)
                 elif msg == '3':
                     cancelReservation()
@@ -168,6 +168,8 @@ def ticketing(user):
                 elif msg == '5':
                     print('Hope to see you again soon')
                     clientSocket.close()
+                    stop = True
+                    break
         except:
             print('You left')
 
