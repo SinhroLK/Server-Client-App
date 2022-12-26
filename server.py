@@ -42,21 +42,21 @@ def tickets(connection, username):
                     getVIPReservation(username, newTickets)
                     connection.send(f'You have successfully bought {newTickets} tickets'.encode(FORMAT))
             elif msg == '3':
-                connectionSocket.send((str(userNormal)).encode(FORMAT))
-                connectionSocket.send((str(userVip)).encode(FORMAT))
-                msg = connectionSocket.recv(HEADER).decode(FORMAT)
+                connection.send((str(userNormal)).encode(FORMAT))
+                connection.send((str(userVip)).encode(FORMAT))
+                msg = connection.recv(HEADER).decode(FORMAT)
                 connection.send(f'You have {userNormal} normal tickets and {userVip} VIP tickets'.encode(FORMAT))
-                userTics = int(connectionSocket.recv(HEADER).decode(FORMAT))
+                userTics = int(connection.recv(HEADER).decode(FORMAT))
                 if msg == '1':
                     cancelNormalReservation(username, userTics)
                 elif msg == '2':
                     cancelVIPReservation(username, userTics)
-                connectionSocket.send('You have successfully canceled your reservations'.encode(FORMAT))
+                connection.send('You have successfully canceled your reservations'.encode(FORMAT))
             elif msg == '4':
                 availableNormal = TOTAL_TICKETS - sumOfTickets()
                 availableVip = TOTAL_VIP_TICKETS - sumOfVipTickets()
-                connectionSocket.send((str(availableNormal)).encode(FORMAT))
-                connectionSocket.send((str(availableVip)).encode(FORMAT))
+                connection.send((str(availableNormal)).encode(FORMAT))
+                connection.send((str(availableVip)).encode(FORMAT))
             elif msg == '5':
                 print(f'{username} left')
                 break
@@ -86,20 +86,20 @@ def handleClient(connection, addr):
                 connection.send('ACCESS DENIED'.encode(FORMAT))
                 print('Client left')
         elif msg == '2':
-            username = connectionSocket.recv(HEADER).decode()
+            username = connection.recv(HEADER).decode()
             usernames = select('username')
             tusername = (username,)
 
             if tusername not in usernames:
-                connectionSocket.send('Username available'.encode(FORMAT))
+                connection.send('Username available'.encode(FORMAT))
             else:
-                connectionSocket.send('Username unavailable, choose other username'.encode(FORMAT))
+                connection.send('Username unavailable, choose other username'.encode(FORMAT))
 
-            password = connectionSocket.recv(HEADER).decode()
-            name = connectionSocket.recv(HEADER).decode()
-            surname = connectionSocket.recv(HEADER).decode()
-            jmbg = connectionSocket.recv(HEADER).decode()
-            email = connectionSocket.recv(HEADER).decode()
+            password = connection.recv(HEADER).decode()
+            name = connection.recv(HEADER).decode()
+            surname = connection.recv(HEADER).decode()
+            jmbg = connection.recv(HEADER).decode()
+            email = connection.recv(HEADER).decode()
             insert((username, password, name, surname, jmbg, email, 0, 0))
         connection.send('Connection established'.encode(FORMAT))
         thread_tickets = threading.Thread(target=tickets, args=(connection, username,))

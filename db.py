@@ -32,7 +32,7 @@ def insert(val):
 def select(sel):
     cursor.execute(f"SELECT {sel} FROM server_client")
     result = cursor.fetchall()
-    #print(result)
+    print(result)
     results = []
     for x in result:
         results.append(x)
@@ -83,7 +83,7 @@ def userTickets(username):
 
 
 def delete():
-    sql = "DELETE FROM server_client where username = 'root5'"
+    sql = "DELETE FROM server_client where username = 'root3'"
     cursor.execute(sql)
     db.commit()
     print(cursor.rowcount, 'deleted')
