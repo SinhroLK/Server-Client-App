@@ -87,3 +87,5 @@ def delete():
     cursor.execute(sql)
     db.commit()
     print(cursor.rowcount, 'deleted')
+
+select('*')
